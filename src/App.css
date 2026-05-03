@@ -1,0 +1,306 @@
+.app {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 90%, transparent);
+  backdrop-filter: blur(6px);
+}
+
+.brand {
+  color: var(--text-h);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.main {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px 20px;
+  box-sizing: border-box;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.page h1 {
+  margin: 0 0 16px;
+}
+
+.page h2 {
+  margin: 18px 0 12px;
+}
+
+.card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  background: var(--surface);
+}
+
+@media (min-width: 640px) {
+  .card {
+    padding: 18px;
+  }
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.row.split {
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.label {
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.input {
+  width: 100%;
+  max-width: 220px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+}
+
+.input::placeholder {
+  color: color-mix(in srgb, var(--text) 70%, transparent);
+}
+
+.input:focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.question {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-h);
+  margin-bottom: 12px;
+}
+
+.question.small {
+  font-size: 16px;
+  margin-bottom: 6px;
+}
+
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 12px 0 6px;
+}
+
+.choice {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+label.choice {
+  cursor: pointer;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+}
+
+label.choice:hover {
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--border));
+}
+
+label.choice:has(input:checked) {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  background: color-mix(in srgb, var(--accent) 10%, var(--bg));
+}
+
+.choice input {
+  margin-top: 2px;
+  accent-color: var(--accent);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.button {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: var(--accent);
+  color: white;
+  cursor: pointer;
+}
+
+.button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 88%, var(--text-h));
+}
+
+.button:active:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 80%, var(--text-h));
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.button.secondary {
+  background: transparent;
+  color: var(--text-h);
+  border-color: var(--border);
+}
+
+.button.secondary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--bg) 75%, var(--text-h) 3%);
+  border-color: color-mix(in srgb, var(--accent) 22%, var(--border));
+}
+
+.meta {
+  color: var(--text);
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.hint {
+  color: var(--text);
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.alert {
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 86%, var(--text-h) 1%);
+}
+
+.alert.error {
+  border-color: color-mix(in srgb, red 45%, var(--border));
+  background: color-mix(in srgb, red 8%, var(--bg));
+}
+
+.score {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.list > .card {
+  background: var(--surface);
+}
+
+.explain {
+  margin-top: 12px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+
+.explain .label {
+  margin-top: 10px;
+}
+
+.choice.option {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.choice.option .optionText {
+  color: var(--text-h);
+  line-height: 1.45;
+}
+
+.choice.option .optionLabel {
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.choice.option.isCorrect {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg));
+}
+
+.choice.option.isWrongChosen {
+  border-color: color-mix(in srgb, red 40%, var(--border));
+  background: color-mix(in srgb, red 6%, var(--bg));
+}
+
+.badges {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 13px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 86%, var(--text-h) 1%);
+  color: var(--text-h);
+}
+
+.badge.correct {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+  background: color-mix(in srgb, var(--accent) 10%, var(--bg));
+}
+
+.badge.chosen {
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--border));
+  background: color-mix(in srgb, var(--bg) 78%, var(--text-h) 2%);
+}
+
+.text {
+  margin-top: 6px;
+  color: var(--text-h);
+}
+
+.keywords {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.tag {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 13px;
+  background: color-mix(in srgb, var(--bg) 86%, var(--text-h) 1%);
+}
