@@ -22,11 +22,15 @@ function reducer(state, action) {
       const answersById = {}
       for (const q of questions) answersById[q.id] = null
 
+      const flaggedById = {}
+      for (const q of questions) flaggedById[q.id] = false
+
       return {
         ...state,
         status: 'inProgress',
         questions,
         answersById,
+        flaggedById,
         currentIndex: 0,
         finished: false,
       }
@@ -50,12 +54,25 @@ function reducer(state, action) {
       if (state.status !== 'inProgress') return state
       return { ...state, status: 'finished', finished: true }
     }
+    case 'TOGGLE_FLAG': {
+      if (state.status !== 'inProgress') return state
+      const id = action.questionId
+      const current = !!state.flaggedById?.[id]
+      return {
+        ...state,
+        flaggedById: {
+          ...(state.flaggedById ?? {}),
+          [id]: !current,
+        },
+      }
+    }
     case 'RESET':
       return {
         ...state,
         status: 'idle',
         questions: [],
         answersById: {},
+        flaggedById: {},
         currentIndex: 0,
         finished: false,
       }
@@ -71,6 +88,7 @@ export function ExamProvider({ children }) {
     bankError: null,
     questions: [],
     answersById: {},
+    flaggedById: {},
     currentIndex: 0,
     finished: false,
   })
@@ -84,6 +102,7 @@ export function ExamProvider({ children }) {
         dispatch({ type: 'ANSWER', questionId, choiceIndex }),
       goto: (index) => dispatch({ type: 'GOTO', index }),
       finish: () => dispatch({ type: 'FINISH' }),
+      toggleFlag: (questionId) => dispatch({ type: 'TOGGLE_FLAG', questionId }),
       reset: () => dispatch({ type: 'RESET' }),
     }
   }, [])

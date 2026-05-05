@@ -26,6 +26,110 @@ function ChoiceBadges({ isChosen, isCorrect }) {
   )
 }
 
+function ReviewList({ items, openId, setOpenId }) {
+  if (!items.length) return null
+
+  return (
+    <div className="list">
+      {items.map(({ question, chosenIndex }) => {
+        const isOpen = openId === question.id
+        const correctIndex = question.correctIndex
+
+        const chosenText =
+          chosenIndex == null ? null : question.choices?.[chosenIndex] ?? null
+
+        const correctText =
+          correctIndex == null ? null : question.choices?.[correctIndex] ?? null
+
+        return (
+          <div key={question.id} className="card">
+            <div className="row split">
+              <div>
+                <div className="question small">{question.topic}</div>
+                <div className="meta">
+                  你的答案：
+                  {renderChoiceLabel(chosenIndex, { emptyLabel: '（未作答）' })}
+                  {chosenText ? ` ${chosenText}` : ''}
+                  {'  '}| 正確答案：
+                  {renderChoiceLabel(correctIndex, {
+                    emptyLabel: '（題庫答案無法解析）',
+                  })}
+                  {correctText ? ` ${correctText}` : ''}
+                </div>
+              </div>
+
+              <button
+                className="button secondary"
+                type="button"
+                onClick={() => setOpenId(isOpen ? null : question.id)}
+              >
+                {isOpen ? '收合' : '看解析'}
+              </button>
+            </div>
+
+            {isOpen ? (
+              <div className="explain">
+                <div className="label">題目</div>
+                <div className="text">{question.topic}</div>
+
+                <div className="label">選項</div>
+                {question.choices?.length ? (
+                  <div className="choices">
+                    {question.choices.map((c, i) => {
+                      const isChosen = chosenIndex === i
+                      const isCorrect = correctIndex === i
+                      const isWrongChosen = isChosen && !isCorrect
+                      const marker = choiceMarker({ isChosen, isCorrect })
+
+                      return (
+                        <div
+                          key={i}
+                          className={
+                            'choice option' +
+                            (isCorrect ? ' isCorrect' : '') +
+                            (isChosen ? ' isChosen' : '') +
+                            (isWrongChosen ? ' isWrongChosen' : '')
+                          }
+                        >
+                          <span className="optionText">
+                            <span className="optionLabel">
+                              {renderChoiceLabel(i, { emptyLabel: '' })}.
+                            </span>{' '}
+                            {c}
+                            {marker ? <span className="meta"> {marker}</span> : null}
+                          </span>
+
+                          <ChoiceBadges isChosen={isChosen} isCorrect={isCorrect} />
+                        </div>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <div className="hint">（此題沒有選項，請檢查題庫的 choic 欄位）</div>
+                )}
+
+                <div className="label">解析</div>
+                <div className="text">{question.why || '（未提供解析）'}</div>
+
+                <div className="label">複習重點</div>
+                <div className="keywords">
+                  {(question.keyword?.length ? question.keyword : ['（未提供）']).map(
+                    (k, i) => (
+                      <span key={i} className="tag">
+                        {k}
+                      </span>
+                    ),
+                  )}
+                </div>
+              </div>
+            ) : null}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 export default function ResultsPage() {
   const navigate = useNavigate()
   const { state, reset } = useExam()
@@ -38,6 +142,18 @@ export default function ResultsPage() {
   const report = useMemo(() => {
     return gradeExam(state.questions, state.answersById)
   }, [state.questions, state.answersById])
+
+  const flaggedExtra = useMemo(() => {
+    const flagged = state.flaggedById ?? {}
+    const wrongIds = new Set(report.wrong.map((x) => x.question.id))
+
+    return state.questions
+      .filter((q) => !!flagged[q.id] && !wrongIds.has(q.id))
+      .map((q) => ({
+        question: q,
+        chosenIndex: state.answersById?.[q.id] ?? null,
+      }))
+  }, [state.questions, state.answersById, state.flaggedById, report.wrong])
 
   function onBackHome() {
     reset()
@@ -64,112 +180,20 @@ export default function ResultsPage() {
         </div>
       </div>
 
+      <h2>標記題目</h2>
+
+      {flaggedExtra.length === 0 ? (
+        <div className="hint">沒有額外標記題目（標記的錯題會出現在錯題解析）。</div>
+      ) : (
+        <ReviewList items={flaggedExtra} openId={openId} setOpenId={setOpenId} />
+      )}
+
       <h2>錯題解析</h2>
 
       {report.wrong.length === 0 ? (
         <div className="hint">全對！沒有錯題可以檢視。</div>
       ) : (
-        <div className="list">
-          {report.wrong.map(({ question, chosenIndex }) => {
-            const isOpen = openId === question.id
-            const correctIndex = question.correctIndex
-
-            const chosenText =
-              chosenIndex == null
-                ? null
-                : question.choices?.[chosenIndex] ?? null
-
-            const correctText =
-              correctIndex == null
-                ? null
-                : question.choices?.[correctIndex] ?? null
-
-            return (
-              <div key={question.id} className="card">
-                <div className="row split">
-                  <div>
-                    <div className="question small">{question.topic}</div>
-                    <div className="meta">
-                      你的答案：
-                      {renderChoiceLabel(chosenIndex, { emptyLabel: '（未作答）' })}
-                      {chosenText ? ` ${chosenText}` : ''}
-                      {'  '}| 正確答案：
-                      {renderChoiceLabel(correctIndex, {
-                        emptyLabel: '（題庫答案無法解析）',
-                      })}
-                      {correctText ? ` ${correctText}` : ''}
-                    </div>
-                  </div>
-
-                  <button
-                    className="button secondary"
-                    type="button"
-                    onClick={() => setOpenId(isOpen ? null : question.id)}
-                  >
-                    {isOpen ? '收合' : '看解析'}
-                  </button>
-                </div>
-
-                {isOpen ? (
-                  <div className="explain">
-                    <div className="label">題目</div>
-                    <div className="text">{question.topic}</div>
-
-                    <div className="label">選項</div>
-                    {question.choices?.length ? (
-                      <div className="choices">
-                        {question.choices.map((c, i) => {
-                          const isChosen = chosenIndex === i
-                          const isCorrect = correctIndex === i
-                          const isWrongChosen = isChosen && !isCorrect
-                          const marker = choiceMarker({ isChosen, isCorrect })
-
-                          return (
-                            <div
-                              key={i}
-                              className={
-                                'choice option' +
-                                (isCorrect ? ' isCorrect' : '') +
-                                (isChosen ? ' isChosen' : '') +
-                                (isWrongChosen ? ' isWrongChosen' : '')
-                              }
-                            >
-                              <span className="optionText">
-                                <span className="optionLabel">
-                                  {renderChoiceLabel(i, { emptyLabel: '' })}.
-                                </span>{' '}
-                                {c}
-                                {marker ? <span className="meta"> {marker}</span> : null}
-                              </span>
-
-                              <ChoiceBadges isChosen={isChosen} isCorrect={isCorrect} />
-                            </div>
-                          )
-                        })}
-                      </div>
-                    ) : (
-                      <div className="hint">（此題沒有選項，請檢查題庫的 choic 欄位）</div>
-                    )}
-
-                    <div className="label">解析</div>
-                    <div className="text">{question.why || '（未提供解析）'}</div>
-
-                    <div className="label">複習重點</div>
-                    <div className="keywords">
-                      {(question.keyword?.length ? question.keyword : ['（未提供）']).map(
-                        (k, i) => (
-                          <span key={i} className="tag">
-                            {k}
-                          </span>
-                        ),
-                      )}
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-            )
-          })}
-        </div>
+        <ReviewList items={report.wrong} openId={openId} setOpenId={setOpenId} />
       )}
     </div>
   )

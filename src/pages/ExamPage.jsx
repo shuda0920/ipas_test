@@ -2,7 +2,7 @@ import { Navigate } from 'react-router-dom'
 import { useExam } from '../state/ExamContext.jsx'
 
 export default function ExamPage() {
-  const { state, answer, goto, finish } = useExam()
+  const { state, answer, goto, finish, toggleFlag } = useExam()
 
   if (state.status === 'finished') {
     return <Navigate to="/results" replace />
@@ -17,6 +17,7 @@ export default function ExamPage() {
   const q = state.questions[idx]
   const chosenIndex = state.answersById[q.id]
   const hasChosen = chosenIndex != null
+  const isFlagged = !!state.flaggedById?.[q.id]
 
   const isFirst = idx === 0
   const isLast = idx === total - 1
@@ -35,6 +36,10 @@ export default function ExamPage() {
     finish()
   }
 
+  function onToggleFlag() {
+    toggleFlag(q.id)
+  }
+
   return (
     <div className="page">
       <h1>考試頁</h1>
@@ -44,6 +49,13 @@ export default function ExamPage() {
       </div>
 
       <div className="card">
+        <div className="row split">
+          <div className="meta">{isFlagged ? '已標記此題' : '未標記'}</div>
+          <button className="button secondary" type="button" onClick={onToggleFlag}>
+            {isFlagged ? '取消標記' : '標記'}
+          </button>
+        </div>
+
         <div className="question">{q.topic}</div>
 
         <div className="choices">
@@ -80,7 +92,7 @@ export default function ExamPage() {
         </div>
       </div>
 
-      <div className="hint">可不作答直接切題，未作答會算錯。</div>
+      <div className="hint">必須先作答，才能按「下一題」或「交卷」。</div>
     </div>
   )
 }
