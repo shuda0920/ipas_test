@@ -16,11 +16,13 @@ export default function ExamPage() {
   const idx = state.currentIndex
   const q = state.questions[idx]
   const chosenIndex = state.answersById[q.id]
+  const hasChosen = chosenIndex != null
 
   const isFirst = idx === 0
   const isLast = idx === total - 1
 
   function onNext() {
+    if (!hasChosen) return
     if (!isLast) goto(idx + 1)
   }
 
@@ -29,6 +31,7 @@ export default function ExamPage() {
   }
 
   function onFinish() {
+    if (!hasChosen) return
     finish()
   }
 
@@ -66,11 +69,11 @@ export default function ExamPage() {
           </button>
 
           {!isLast ? (
-            <button className="button" type="button" onClick={onNext}>
+            <button className="button" type="button" onClick={onNext} disabled={!hasChosen}>
               下一題
             </button>
           ) : (
-            <button className="button" type="button" onClick={onFinish}>
+            <button className="button" type="button" onClick={onFinish} disabled={!hasChosen}>
               交卷
             </button>
           )}

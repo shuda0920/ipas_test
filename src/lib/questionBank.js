@@ -7,18 +7,38 @@ function normalizeKeyword(keyword) {
     .filter(Boolean)
 }
 
+function normalizeChoiceText(choice) {
+  const original = choice == null ? '' : String(choice)
+  let s = original.trim()
+  if (!s) return ''
+
+  // Common option label prefixes:
+  // (A) foo, （A）foo, [A] foo
+  s = s.replace(/^\s*[\(\[（【]\s*([A-Za-z]|\d{1,2})\s*[\)\]）】]\s*/u, '')
+  // A) foo, A. foo, A、foo, 1) foo, 1. foo
+  s = s.replace(/^\s*([A-Za-z]|\d{1,2})\s*[\)\.．:：、]\s*/u, '')
+
+  const cleaned = s.trim()
+  return cleaned || original.trim()
+}
+
 function normalizeChoices(choicOrChoice) {
   if (choicOrChoice == null) return []
-  if (Array.isArray(choicOrChoice)) return choicOrChoice.map((c) => String(c))
-  return String(choicOrChoice)
-    .split(/\n|\|/)
-    .map((c) => c.trim())
-    .filter(Boolean)
+  const raw = Array.isArray(choicOrChoice)
+    ? choicOrChoice.map((c) => String(c))
+    : String(choicOrChoice)
+        .split(/\n|\|/)
+        .map((c) => c.trim())
+        .filter(Boolean)
+
+  return raw.map((c) => normalizeChoiceText(c))
 }
 
 function parseAnswerAsIndex(ans, choices) {
   const n = choices.length
   if (n === 0 || ans == null) return null
+
+  const normalizedChoices = choices.map((c) => normalizeChoiceText(c))
 
   if (typeof ans === 'number' && Number.isFinite(ans)) {
     if (ans >= 1 && ans <= n) return ans - 1
@@ -29,9 +49,28 @@ function parseAnswerAsIndex(ans, choices) {
   const s = String(ans).trim()
   if (!s) return null
 
+  // Handle formats like (A) / （A） / [A]
+  const bracketed = s.match(/^[\(\[（【]\s*([A-Za-z]|\d{1,2})\s*[\)\]）】]\s*$/u)
+  if (bracketed) {
+    const inner = bracketed[1]
+    if (/^[A-Za-z]$/.test(inner)) {
+      const idx = inner.toUpperCase().charCodeAt(0) - 'A'.charCodeAt(0)
+      if (idx >= 0 && idx < n) return idx
+    }
+
+    if (/^\d{1,2}$/.test(inner)) {
+      const num = Number(inner)
+      if (num >= 1 && num <= n) return num - 1
+      if (num >= 0 && num < n) return num
+    }
+  }
+
   // Exact match
   const exact = choices.findIndex((c) => c === s)
   if (exact !== -1) return exact
+
+  const exactNormalized = normalizedChoices.findIndex((c) => c === normalizeChoiceText(s))
+  if (exactNormalized !== -1) return exactNormalized
 
   // Letter A/B/C...
   if (/^[A-Za-z]$/.test(s)) {
@@ -39,9 +78,24 @@ function parseAnswerAsIndex(ans, choices) {
     if (idx >= 0 && idx < n) return idx
   }
 
+  // A) / A. / A、
+  const letterWithPunct = s.match(/^\s*([A-Za-z])\s*[\)\.．:：、]\s*$/u)
+  if (letterWithPunct) {
+    const idx = letterWithPunct[1].toUpperCase().charCodeAt(0) - 'A'.charCodeAt(0)
+    if (idx >= 0 && idx < n) return idx
+  }
+
   // Numeric string
   if (/^\d+$/.test(s)) {
     const num = Number(s)
+    if (num >= 1 && num <= n) return num - 1
+    if (num >= 0 && num < n) return num
+  }
+
+  // 1) / 1.
+  const numWithPunct = s.match(/^\s*(\d{1,2})\s*[\)\.．:：、]\s*$/u)
+  if (numWithPunct) {
+    const num = Number(numWithPunct[1])
     if (num >= 1 && num <= n) return num - 1
     if (num >= 0 && num < n) return num
   }
